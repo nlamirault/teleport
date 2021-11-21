@@ -251,9 +251,9 @@ ifeq ("$(with_roletester)", "yes")
 #
 # This approach prevents us from needing to run a new cargo build, allowing us to
 # link libraries that depend on older versions of glibc.
-ifneq ($(wildcard /teleport-rust-build-cache/roletester/target/.),)
+ifneq ($(wildcard /opt/teleport-rust-build-cache/roletester/target/.),)
 $(shell mkdir -p lib/datalog/roletester/target)
-$(shell cp -r /teleport-rust-build-cache/roletester/target/* lib/datalog/roletester/target/)
+$(shell cp -r /opt/teleport-rust-build-cache/roletester/target/* lib/datalog/roletester/target/)
 endif
 
 .PHONY: roletester
@@ -273,9 +273,9 @@ endif
 ifeq ("$(with_rdpclient)", "yes")
 
 # Copy pre-built RDP client library, just like we do for roletester.
-ifneq ($(wildcard /teleport-rust-build-cache/rdpclient/target/.),)
+ifneq ($(wildcard /opt/teleport-rust-build-cache/rdpclient/target/.),)
 $(shell mkdir -p lib/srv/desktop/rdp/rdpclient/target)
-$(shell cp -r /teleport-rust-build-cache/rdpclient/target/* lib/srv/desktop/rdp/rdpclient/target/)
+$(shell cp -r /opt/teleport-rust-build-cache/rdpclient/target/* lib/srv/desktop/rdp/rdpclient/target/)
 endif
 
 .PHONY: rdpclient
@@ -739,6 +739,11 @@ docker-binaries: clean
 .PHONY:enter
 enter:
 	$(MAKE) -C build.assets enter
+
+# Interactively enters the Docker container for building Rust libraries
+.PHONY:enter-rust
+enter-rust:
+	$(MAKE) -C build.assets enter-rust
 
 # grpc generates GRPC stubs from service definitions
 .PHONY: grpc
