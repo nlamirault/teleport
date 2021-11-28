@@ -19,6 +19,7 @@ package ui
 import "github.com/gravitational/teleport/api/constants"
 
 const (
+
 	// WebConfigAuthProviderOIDCType is OIDC provider type
 	WebConfigAuthProviderOIDCType = "oidc"
 	// WebConfigAuthProviderOIDCURL is OIDC webapi endpoint

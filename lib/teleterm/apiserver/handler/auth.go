@@ -26,6 +26,20 @@ func (s *Handler) CreateAuthChallenge(ctx context.Context, req *api.CreateAuthCh
 	return &api.CreateAuthChallengeResponse{}, nil
 }
 
+// CreateAuthSSOChallenge creates auth sso challenge and automatically solves it
+func (s *Handler) CreateAuthSSOChallenge(ctx context.Context, req *api.CreateAuthSSOChallengeRequest) (*api.EmptyResponse, error) {
+	cluster, err := s.DaemonService.GetCluster(req.ClusterUri)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := cluster.SSOLogin(ctx, req.ProviderType, req.ProviderName); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &api.EmptyResponse{}, nil
+}
+
 // GetAuthSettings returns cluster auth preferences
 func (s *Handler) GetAuthSettings(ctx context.Context, req *api.GetAuthSettingsRequest) (*api.AuthSettings, error) {
 	cluster, err := s.DaemonService.GetCluster(req.ClusterUri)
@@ -39,34 +53,21 @@ func (s *Handler) GetAuthSettings(ctx context.Context, req *api.GetAuthSettingsR
 	}
 
 	result := &api.AuthSettings{
-		Type:          preferences.Type,
-		SecondFactor:  string(preferences.SecondFactor),
-		AuthProviders: []*api.AuthProvider{},
+		PreferredMfa:     string(preferences.PreferredLocalMFA),
+		SecondFactor:     string(preferences.SecondFactor),
+		LocalAuthEnabled: preferences.LocalAuthEnabled,
+		AuthProviders:    []*api.AuthProvider{},
 	}
 
-	for _, provider := range preferences.AuthProviders {
+	for _, provider := range preferences.Providers {
 		result.AuthProviders = append(result.AuthProviders, &api.AuthProvider{
-			Type:    provider.Type,
-			Name:    provider.Name,
-			Display: provider.Display,
+			Type:        provider.Type,
+			Name:        provider.Name,
+			DisplayName: provider.DisplayName,
 		})
 	}
 
 	return result, nil
-}
-
-// CreateAuthSSOChallenge creates auth sso challenge and automatically solves it
-func (s *Handler) CreateAuthSSOChallenge(ctx context.Context, req *api.CreateAuthSSOChallengeRequest) (*api.EmptyResponse, error) {
-	cluster, err := s.DaemonService.GetCluster(req.ClusterUri)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	if err := cluster.SSOLogin(ctx, req.ProviderType, req.ProviderName); err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	return &api.EmptyResponse{}, nil
 }
 
 // SolveAuthChallenge solves auth challenge and logs into a cluster
